@@ -27,6 +27,10 @@ public class IndoNumeroController {
     	if(numS.length()!=0) {
     		try {
     			int num=Integer.parseInt(numS);
+    			if(num<1 ||num>100) {
+    				textLog.appendText("Valore inserito fuori range!\n");
+    				return;
+    			}
     			if (num>numeroSegreto) {
     				textLog.appendText("Valore troppo ALTO\n");
     				ContTent++;
