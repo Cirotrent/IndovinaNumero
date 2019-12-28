@@ -16,70 +16,53 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
 
 public class IndoNumeroController {
-	private int NMAX=100;
-	private int TMAX=7;
-	
-	private int ContTent;
-	private int numeroSegreto;
+
+	private Model model;
 	
 	private  void partita() {
 		String numS=TentativoAttuale.getText();
-    	if(numS.length()!=0) {
+    	
     		try {
     			int num=Integer.parseInt(numS);
-    			if(num<1 ||num>100) {
+    			if(!model.valoreValido(num)) {
     				textLog.appendText("Valore inserito fuori range!\n");
     				return;
     			}
-    			if (num>numeroSegreto) {
-    				textLog.appendText("Valore troppo ALTO\n");
-    				ContTent++;
-    				if(ContTent+1<=TMAX) {
-    					Tentativo.setText(String.format("%d", ContTent));
-        				TentativoAttuale.clear();
-    				}else {
-    					ContTent++;
-    					Tentativo.setText(String.format("%d", ContTent));
-    					textLog.appendText("HAI PERSO! Il numero era "+numeroSegreto+"\n");
-    					HBoxTentativo.setDisable(true);
-        				BtnNuovaPartita.setDisable(false);
-        				
-    				}
+    			
+    			int risultato= model.tentativo(num);
+    			Tentativo.setText(String.format("%d", model.getTentativi()));
+    			
+    			if(risultato==0) {
     				
-    			}else if(num<numeroSegreto) {
-    				textLog.appendText("Valore troppo BASSO\n");
-    				ContTent++;
-    				if(ContTent+1<=TMAX) {
-    					Tentativo.setText(String.format("%d", ContTent));
-        				TentativoAttuale.clear();
-    				}else {
-    					ContTent++;
-    					Tentativo.setText(String.format("%d", ContTent));
-    					textLog.appendText("HAI PERSO! Il numero era "+numeroSegreto+"\n");
-    					HBoxTentativo.setDisable(true);
-        				BtnNuovaPartita.setDisable(false);
-        				
-    					return;
-    				}
-    			}else {
     				textLog.appendText("HAI INDOVINATO!\n");
-    				ContTent++;
-    				Tentativo.setText(String.format("%d", ContTent));
-    				HBoxTentativo.setDisable(true);
-    				BtnNuovaPartita.setDisable(false);
-    				
+    			}else if(risultato<0) {
+    				textLog.appendText("Valore troppo BASSO\n");
+    				TentativoAttuale.clear();
+    			}else {
+    				textLog.appendText("Valore troppo ALTO\n");
+    				TentativoAttuale.clear();
     			}
+    			
+    			if(!model.isInGame()) {
+    				//LA PARTITA è FINITA
+    				if (risultato!=0) {
+    					textLog.appendText("HAI PERSO! Il numero segreto era: \n"+ model.Segreto());
+    				}
+    				HBoxTentativo.setDisable(true);
+					BtnNuovaPartita.setDisable(false);
+    			}
+    			
+    			
+    			
+    			
+   
     			
     		} catch (NumberFormatException e) {
     			textLog.appendText("valore inserito non valido!\n");
     			TentativoAttuale.clear();
     			return;
     		}
-    	}else {
-    		textLog.appendText("Nessun valore inserito!\n");
-    		TentativoAttuale.clear();
-    		return;
-    	}
+    	
 	}
 	
 
@@ -112,17 +95,17 @@ public class IndoNumeroController {
 
     @FXML
     void ClickNuovaPartita(ActionEvent event) {
-    	ContTent=0;
-    	numeroSegreto=(int) (Math.random()*NMAX)+1;
+    
+    	model.newGame();
     	
     	HBoxTentativo.setDisable(false);
     	BtnNuovaPartita.setDisable(true);
     	
     	TentativoAttuale.clear();
-    	Tentativo.setText(String.format("%d", this.ContTent));
-    	TentativiMax.setText(String.format("%d", this.TMAX));
+    	Tentativo.setText(String.format("%d", model.getTentativi()));
+    	TentativiMax.setText(String.format("%d", model.getTMAX()));
     	textLog.clear();
-    	textLog.setText("Indovina un numero conpreso tra 1 e 100\n");
+    	textLog.setText(String.format("Indovina un numero conpreso tra %d e %d\n", 1,model.getNMAX()));
     }
 
     @FXML
@@ -149,4 +132,8 @@ public class IndoNumeroController {
         assert textLog != null : "fx:id=\"textLog\" was not injected: check your FXML file 'IndoNumero.fxml'.";
 
     }
+
+	public void setModel(Model model) {
+		this.model = model;
+	}
 }
